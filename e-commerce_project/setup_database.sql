@@ -19,7 +19,8 @@ CREATE TABLE IF NOT EXISTS products (
     quantity INT NOT NULL,
     category VARCHAR(100),
     rating DECIMAL(2, 1) DEFAULT 0.0,
-    addedBy VARCHAR(100) DEFAULT 'Admin'
+    addedBy VARCHAR(100) DEFAULT 'Admin',
+    isDeleted BOOLEAN DEFAULT FALSE
 );
 
 -- Orders Table
@@ -27,6 +28,7 @@ CREATE TABLE IF NOT EXISTS orders (
     orderId INT AUTO_INCREMENT PRIMARY KEY,
     userId INT NOT NULL,
     totalPrice DECIMAL(10, 2) NOT NULL,
+    userName VARCHAR(100),
     orderDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (userId) REFERENCES users(id)
 );
@@ -42,13 +44,5 @@ CREATE TABLE IF NOT EXISTS order_items (
     FOREIGN KEY (productId) REFERENCES products(id)
 );
 
--- Insert Default Admin User
--- Password is 'admin123'
+-- Default Admin User
 INSERT INTO users (name, email, password, isAdmin) VALUES ('Admin User', 'admin', 'admin123', TRUE);
-
--- Insert some sample products
-INSERT INTO products (name, price, quantity, category, rating) VALUES 
-('Smartphone', 15000.00, 10, 'Electronics', 4.5),
-('Laptop', 45000.00, 5, 'Electronics', 4.8),
-('Headphones', 2500.00, 20, 'Accessories', 4.2),
-('T-Shirt', 500.00, 50, 'Fashion', 4.0);

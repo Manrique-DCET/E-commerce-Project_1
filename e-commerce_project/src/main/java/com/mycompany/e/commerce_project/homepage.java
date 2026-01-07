@@ -159,7 +159,7 @@ public class homepage extends JFrame implements ActionListener {
         tableModel.setRowCount(0);
         allProducts.clear();
 
-        StringBuilder queryBuilder = new StringBuilder("SELECT * FROM products");
+        StringBuilder queryBuilder = new StringBuilder("SELECT * FROM products WHERE isDeleted = FALSE");
         java.util.List<Integer> selectedRatings = new java.util.ArrayList<>();
 
         if (star5.isSelected())
@@ -174,7 +174,7 @@ public class homepage extends JFrame implements ActionListener {
             selectedRatings.add(1);
 
         if (!selectedRatings.isEmpty()) {
-            queryBuilder.append(" WHERE FLOOR(rating) IN (");
+            queryBuilder.append(" AND FLOOR(rating) IN (");
             for (int i = 0; i < selectedRatings.size(); i++) {
                 queryBuilder.append(selectedRatings.get(i));
                 if (i < selectedRatings.size() - 1) {
@@ -259,7 +259,7 @@ public class homepage extends JFrame implements ActionListener {
                     if (confirm == JOptionPane.YES_OPTION) {
                         try (java.sql.Connection conn = DatabaseConnection.getConnection();
                                 java.sql.PreparedStatement stmt = conn
-                                        .prepareStatement("DELETE FROM products WHERE id = ?")) {
+                                        .prepareStatement("UPDATE products SET isDeleted = TRUE WHERE id = ?")) {
 
                             stmt.setInt(1, selectedProduct.getId());
                             int rows = stmt.executeUpdate();
@@ -310,32 +310,7 @@ public class homepage extends JFrame implements ActionListener {
             if (listModel.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Your cart is empty.", "Cart", JOptionPane.INFORMATION_MESSAGE);
             } else {
-                StringBuilder cartContents = new StringBuilder("Items in your cart:\n");
-                double total = 0;
-                java.util.ArrayList<Product> cartItems = new java.util.ArrayList<>();
-
-                for (int i = 0; i < listModel.size(); i++) {
-                    Product p = listModel.getElementAt(i);
-                    cartContents.append("‣ ").append(p.getName()).append(" - ₱").append(p.getPrice()).append("\n");
-                    total += p.getPrice();
-                    cartItems.add(p);
-                }
-                cartContents.append("\nTotal: ₱").append(String.format("%.2f", total));
-
-                // Show custom dialog with checkout
-                Object[] options = { "Checkout", "Close" };
-                int n = JOptionPane.showOptionDialog(this,
-                        cartContents.toString(),
-                        "Cart",
-                        JOptionPane.YES_NO_OPTION,
-                        JOptionPane.INFORMATION_MESSAGE,
-                        null,
-                        options,
-                        options[1]);
-
-                if (n == JOptionPane.YES_OPTION) {
-                    new PaymentWindow(total, cartItems, this).setVisible(true);
-                }
+                new CartWindow(listModel, this, currentUser).setVisible(true);
             }
         }
         if (e.getSource() == searchBtn) {

@@ -17,11 +17,13 @@ public class PaymentWindow extends JFrame implements ActionListener {
     private double totalAmount;
     private ArrayList<Product> cartItems;
     private homepage homePage; // Reference to update cart
+    private User currentUser;
 
-    public PaymentWindow(double totalAmount, ArrayList<Product> cartItems, homepage homePage) {
+    public PaymentWindow(double totalAmount, ArrayList<Product> cartItems, homepage homePage, User currentUser) {
         this.totalAmount = totalAmount;
         this.cartItems = cartItems;
         this.homePage = homePage;
+        this.currentUser = currentUser;
 
         setTitle("Payment");
         setSize(400, 350);
@@ -101,12 +103,10 @@ public class PaymentWindow extends JFrame implements ActionListener {
     }
 
     private boolean saveOrderToDB() {
-        // Assume user ID 1 (Admin) for now since we don't have session management fully
-        // implemented passing user IDs around
-        // In a real app, you'd pass the current logged-in user's ID.
-        int userId = 1;
+        int userId = currentUser.getId();
+        String userName = currentUser.getName();
 
-        String insertOrder = "INSERT INTO orders (userId, totalPrice) VALUES (?, ?)";
+        String insertOrder = "INSERT INTO orders (userId, totalPrice, userName) VALUES (?, ?, ?)";
         String insertOrderItem = "INSERT INTO order_items (orderId, productId, quantity, price) VALUES (?, ?, ?, ?)";
 
         Connection conn = null;
@@ -118,6 +118,7 @@ public class PaymentWindow extends JFrame implements ActionListener {
             PreparedStatement orderStmt = conn.prepareStatement(insertOrder, Statement.RETURN_GENERATED_KEYS);
             orderStmt.setInt(1, userId);
             orderStmt.setDouble(2, totalAmount);
+            orderStmt.setString(3, userName);
             orderStmt.executeUpdate();
 
             ResultSet rs = orderStmt.getGeneratedKeys();
